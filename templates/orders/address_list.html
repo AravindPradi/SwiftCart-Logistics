@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}My Addresses - SwiftCart Logistics{% endblock %}
+{% block page_title %}Delivery Addresses{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Saved Addresses List (2 cols) -->
+    <div class="lg:col-span-2 space-y-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
+            <i class="fa-solid fa-folder-open text-brand-600"></i>
+            <span>Saved Delivery Locations</span>
+        </h3>
+
+        {% if addresses %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for address in addresses %}
+                    <div class="bg-white rounded-3xl border border-gray-150 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="font-extrabold text-gray-800 text-sm flex items-center space-x-1.5">
+                                    <i class="fa-solid fa-location-crosshairs text-brand-600"></i>
+                                    <span>{{ address.name }}</span>
+                                </span>
+                                {% if address.is_default %}
+                                    <span class="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Default</span>
+                                {% endif %}
+                            </div>
+                            <p class="text-sm text-gray-500 leading-relaxed mb-4">
+                                {{ address.address_line }}
+                            </p>
+                            <p class="text-xs text-gray-400"><i class="fa-solid fa-phone text-[10px] mr-1"></i> {{ address.phone_number }}</p>
+                        </div>
+                        
+                        <div class="pt-4 border-t border-gray-50 mt-6 flex justify-end">
+                            <a href="{% url 'address_delete' address.id %}" class="text-xs font-semibold text-rose-600 hover:text-rose-800 p-2 hover:bg-rose-50 rounded-xl transition flex items-center space-x-1">
+                                <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                <span>Delete</span>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm max-w-lg">
+                <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 text-2xl mx-auto mb-6">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">No Addresses Saved</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    You haven't saved any delivery addresses yet. Add a default location using the form to checkout faster.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Add Address Form (1 col) -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 h-fit">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+            <i class="fa-solid fa-circle-plus text-brand-600"></i>
+            <span>Add New Address</span>
+        </h3>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700">
+                        {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    <div class="mt-1">
+                        {% if field.name == 'address_line' %}
+                            <textarea id="{{ field.id_for_label }}" name="{{ field.name }}" rows="3" class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-xl px-3 py-2 border" placeholder="Enter delivery address info..." required></textarea>
+                        {% elif field.name == 'is_default' %}
+                            <div class="flex items-center mt-2">
+                                <input type="checkbox" id="{{ field.id_for_label }}" name="{{ field.name }}" class="focus:ring-brand-500 h-4 w-4 text-brand-600 border-gray-300 rounded">
+                                <label for="{{ field.id_for_label }}" class="ml-2 block text-sm text-gray-500">Set as Default Delivery Address</label>
+                            </div>
+                        {% else %}
+                            <input id="{{ field.id_for_label }}" name="{{ field.name }}" type="text" {% if field.field.required %}required{% endif %} class="block w-full px-3 py-2.5 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm" placeholder="e.g. {% if field.name == 'name' %}Home, Office{% else %}+1 555-000-000{% endif %}">
+                        {% endif %}
+                    </div>
+                    {% if field.errors %}
+                        <p class="mt-1 text-xs text-red-500 font-semibold">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 transition duration-150 transform hover:-translate-y-0.5">
+                Save Address <i class="fa-solid fa-check ml-2 self-center"></i>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

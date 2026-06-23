@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - SwiftCart Logistics{% endblock %}
+{% block page_title %}Welcome to SwiftCart Logistics{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+    <!-- Hero Section -->
+    <div class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-brand-800 to-indigo-900 text-white shadow-2xl p-8 sm:p-12 mb-12">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,92,246,0.2),transparent)]"></div>
+        <div class="relative z-10 max-w-2xl">
+            <span class="inline-flex items-center space-x-1.5 px-3 py-1 bg-brand-500/20 text-brand-300 text-xs font-semibold rounded-full uppercase tracking-wider mb-6">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Fast & Reliable Warehouse Delivery</span>
+            </span>
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4 leading-tight">
+                Streamline Your <span class="text-brand-400">Logistics</span> Operations
+            </h1>
+            <p class="text-base sm:text-lg text-brand-100 mb-8 leading-relaxed">
+                SwiftCart Logistics connects warehouse inventory, customers, and online riders in real-time. Manage products, route orders, and deliver items with full status tracking.
+            </p>
+            {% if not user.is_authenticated %}
+                <div class="flex flex-wrap gap-4">
+                    <a href="{% url 'login' %}" class="px-6 py-3 bg-white hover:bg-brand-50 text-brand-900 font-semibold rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+                        Get Started
+                    </a>
+                    <a href="{% url 'register_customer' %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg transition transform hover:-translate-y-0.5 border border-brand-500">
+                        Register Customer
+                    </a>
+                    <a href="{% url 'register_rider' %}" class="px-6 py-3 bg-brand-900/40 hover:bg-brand-900/60 text-white font-semibold rounded-xl shadow-lg transition transform hover:-translate-y-0.5 border border-brand-700">
+                        Become a Rider
+                    </a>
+                </div>
+            {% else %}
+                <div class="flex flex-wrap gap-4">
+                    {% if user.is_admin %}
+                        <a href="{% url 'admin_dashboard' %}" class="px-6 py-3 bg-white hover:bg-brand-50 text-brand-900 font-semibold rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+                            Go to Admin Dashboard <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                    {% elif user.is_customer %}
+                        <a href="{% url 'customer_dashboard' %}" class="px-6 py-3 bg-white hover:bg-brand-50 text-brand-900 font-semibold rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+                            Go to Customer Dashboard <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                        <a href="{% url 'product_list' %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg transition transform hover:-translate-y-0.5 border border-brand-500">
+                            Browse Products <i class="fa-solid fa-bag-shopping ml-2"></i>
+                        </a>
+                    {% elif user.is_rider %}
+                        <a href="{% url 'rider_dashboard' %}" class="px-6 py-3 bg-white hover:bg-brand-50 text-brand-900 font-semibold rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+                            Go to Rider Dashboard <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Features Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-brand-600 text-xl mb-6 shadow-inner">
+                    <i class="fa-solid fa-warehouse"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Smart Warehouse</h3>
+                <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                    Maintain real-time inventory levels, track low stock warnings, organize products by category, and update catalog status dynamically.
+                </p>
+            </div>
+            <span class="text-xs font-semibold text-brand-600 bg-brand-50 self-start px-2.5 py-1 rounded-full uppercase tracking-wider">Inventory Control</span>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center text-brand-600 text-xl mb-6 shadow-inner">
+                    <i class="fa-solid fa-cart-arrow-down"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Seamless Shopping</h3>
+                <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                    Customer portal provides smooth product filtering, instant cart management, multi-address support, and real-time step-by-step status tracking.
+                </p>
+            </div>
+            <span class="text-xs font-semibold text-brand-600 bg-brand-50 self-start px-2.5 py-1 rounded-full uppercase tracking-wider">Order Management</span>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-brand-600 text-xl mb-6 shadow-inner">
+                    <i class="fa-solid fa-motorcycle"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">On-Demand Riders</h3>
+                <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                    Riders toggle availability, accept or reject delivery requests on their custom queue, and update progress states from pickup to handoff.
+                </p>
+            </div>
+            <span class="text-xs font-semibold text-brand-600 bg-brand-50 self-start px-2.5 py-1 rounded-full uppercase tracking-wider">Rider Logistics</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

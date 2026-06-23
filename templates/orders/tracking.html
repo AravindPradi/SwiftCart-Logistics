@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}Track Order #{{ order.id }} - SwiftCart Logistics{% endblock %}
+{% block page_title %}Order Tracking{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <!-- Header Summary Card -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-8 flex flex-col md:flex-row justify-between gap-4">
+        <div>
+            <span class="text-xs text-gray-400 font-bold uppercase tracking-wider block">Tracking ID</span>
+            <h1 class="text-2xl font-extrabold text-gray-900">Order #{{ order.id }}</h1>
+            <p class="text-xs text-gray-400 mt-1">Placed on {{ order.created_at|date:"M d, Y @ H:i" }}</p>
+        </div>
+        
+        <div class="flex items-center space-x-6">
+            <div class="text-left md:text-right">
+                <span class="text-xs text-gray-400 font-bold uppercase tracking-wider block">Total Amount</span>
+                <span class="text-2xl font-black text-brand-600">${{ order.total_amount }}</span>
+            </div>
+
+            <div>
+                <span class="text-xs text-gray-400 font-bold uppercase tracking-wider block mb-1">Status</span>
+                {% if order.status == 'DELIVERED' %}
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-200"><i class="fa-solid fa-circle-check mr-1"></i> Delivered</span>
+                {% elif order.status == 'FAILED_DELIVERY' %}
+                    <span class="bg-rose-100 text-rose-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-rose-200"><i class="fa-solid fa-circle-xmark mr-1"></i> Failed</span>
+                {% elif order.status == 'CANCELLED' %}
+                    <span class="bg-gray-150 text-gray-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-gray-300">Cancelled</span>
+                {% else %}
+                    <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-indigo-200 animate-pulse"><i class="fa-solid fa-truck-fast mr-1"></i> Transit</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Delivery Timeline (2 cols) -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+                    <i class="fa-solid fa-timeline text-brand-600"></i>
+                    <span>Delivery Timeline</span>
+                </h3>
+
+                <!-- Timeline wrapper -->
+                <div class="relative pl-8 space-y-8 before:absolute before:inset-y-0 before:left-3 before:w-0.5 before:bg-gray-200">
+                    
+                    <!-- 1. Order Placed (Pending) -->
+                    <div class="relative">
+                        <!-- Dot -->
+                        <span class="absolute -left-[29px] top-1 w-6 h-6 rounded-full bg-emerald-500 border-4 border-white shadow-sm flex items-center justify-center text-[10px] text-white">
+                            <i class="fa-solid fa-check"></i>
+                        </span>
+                        <div class="ml-2">
+                            <h4 class="font-bold text-gray-800 text-sm">Order Placed</h4>
+                            <p class="text-xs text-gray-400 mt-0.5">Order was received by the warehouse and added to the processing queue.</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Rider Assigned -->
+                    {% with status=order.status %}
+                    <div class="relative">
+                        <!-- Dot -->
+                        <span class="absolute -left-[29px] top-1 w-6 h-6 rounded-full shadow-sm flex items-center justify-center text-[10px] text-white
+                            {% if status == 'PENDING' or status == 'CANCELLED' %}bg-gray-300 border-4 border-white
+                            {% else %}bg-emerald-500 border-4 border-white{% endif %}">
+                            {% if status == 'PENDING' or status == 'CANCELLED' %}<i class="fa-solid fa-circle text-[6px]"></i>{% else %}<i class="fa-solid fa-check"></i>{% endif %}
+                        </span>
+                        <div class="ml-2">
+                            <h4 class="font-bold {% if status == 'PENDING' or status == 'CANCELLED' %}text-gray-400{% else %}text-gray-800{% endif %} text-sm">Rider Assigned</h4>
+                            <p class="text-xs text-gray-450 mt-0.5">
+                                {% if order.rider %}
+                                    Rider <strong>{{ order.rider.username }}</strong> accepted the order.
+                                {% else %}
+                                    Waiting for an online rider to accept the delivery task.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 3. Reached Warehouse -->
+                    <div class="relative">
+                        <span class="absolute -left-[29px] top-1 w-6 h-6 rounded-full shadow-sm flex items-center justify-center text-[10px] text-white
+                            {% if status == 'PENDING' or status == 'RIDER_ASSIGNED' or status == 'CANCELLED' %}bg-gray-300 border-4 border-white
+                            {% else %}bg-emerald-500 border-4 border-white{% endif %}">
+                            {% if status == 'PENDING' or status == 'RIDER_ASSIGNED' or status == 'CANCELLED' %}<i class="fa-solid fa-circle text-[6px]"></i>{% else %}<i class="fa-solid fa-check"></i>{% endif %}
+                        </span>
+                        <div class="ml-2">
+                            <h4 class="font-bold {% if status == 'PENDING' or status == 'RIDER_ASSIGNED' or status == 'CANCELLED' %}text-gray-400{% else %}text-gray-800{% endif %} text-sm">Reached Warehouse</h4>
+                            <p class="text-xs text-gray-450 mt-0.5">Rider has arrived at the warehouse to pick up items.</p>
+                        </div>
+                    </div>
+
+                    <!-- 4. Picked Up -->
+                    <div class="relative">
+                        <span class="absolute -left-[29px] top-1 w-6 h-6 rounded-full shadow-sm flex items-center justify-center text-[10px] text-white
+                            {% if status in 'PENDING RIDER_ASSIGNED REACHED_WAREHOUSE CANCELLED' %}bg-gray-300 border-4 border-white
+                            {% else %}bg-emerald-500 border-4 border-white{% endif %}">
+                            {% if status in 'PENDING RIDER_ASSIGNED REACHED_WAREHOUSE CANCELLED' %}<i class="fa-solid fa-circle text-[6px]"></i>{% else %}<i class="fa-solid fa-check"></i>{% endif %}
+                        </span>
+                        <div class="ml-2">
+                            <h4 class="font-bold {% if status in 'PENDING RIDER_ASSIGNED REACHED_WAREHOUSE CANCELLED' %}text-gray-400{% else %}text-gray-800{% endif %} text-sm">Picked Up</h4>
+                            <p class="text-xs text-gray-450 mt-0.5">Products have been scanned, loaded, and left the warehouse.</p>
+                        </div>
+                    </div>
+
+                    <!-- 5. On the Way -->
+                    <div class="relative">
+                        <span class="absolute -left-[29px] top-1 w-6 h-6 rounded-full shadow-sm flex items-center justify-center text-[10px] text-white
+                            {% if status in 'PENDING RIDER_ASSIGNED REACHED_WAREHOUSE PICKED_UP CANCELLED' %}bg-gray-300 border-4 border-white
+                            {% else %}bg-emerald-500 border-4 border-white{% endif %}">
+                            {% if status in 'PENDING RIDER_ASSIGNED REACHED_WAREHOUSE PICKED_UP CANCELLED' %}<i class="fa-solid fa-circle text-[6px]"></i>{% else %}<i class="fa-solid fa-check"></i>{% endif %}
+                        </span>
+                        <div class="ml-2">
+                            <h4 class="font-bold {% if status in 'PENDING RIDER_ASSIGNED REACHED_WAREHOUSE PICKED_UP CANCELLED' %}text-gray-400{% else %}text-gray-800{% endif %} text-sm">On The Way</h4>
+                            <p class="text-xs text-gray-450 mt-0.5">Rider is currently navigating towards your delivery address.</p>
+                        </div>
+                    </div>
+
+                    <!-- 6. Delivered / Terminal Status -->
+                    <div class="relative">
+                        <span class="absolute -left-[29px] top-1 w-6 h-6 rounded-full shadow-sm flex items-center justify-center text-xs text-white
+                            {% if status == 'DELIVERED' %}bg-emerald-500 border-4 border-white
+                            {% elif status == 'FAILED_DELIVERY' %}bg-rose-500 border-4 border-white
+                            {% else %}bg-gray-300 border-4 border-white{% endif %}">
+                            {% if status == 'DELIVERED' %}<i class="fa-solid fa-circle-check"></i>
+                            {% elif status == 'FAILED_DELIVERY' %}<i class="fa-solid fa-triangle-exclamation"></i>
+                            {% else %}<i class="fa-solid fa-flag text-[8px]"></i>{% endif %}
+                        </span>
+                        <div class="ml-2">
+                            <h4 class="font-bold {% if status == 'DELIVERED' %}text-emerald-700{% elif status == 'FAILED_DELIVERY' %}text-rose-700{% else %}text-gray-400{% endif %} text-sm">
+                                {% if status == 'FAILED_DELIVERY' %}Delivery Failed{% else %}Delivered{% endif %}
+                            </h4>
+                            <p class="text-xs text-gray-450 mt-0.5">
+                                {% if status == 'DELIVERED' %}
+                                    Package delivered successfully! Thank you for ordering.
+                                {% elif status == 'FAILED_DELIVERY' %}
+                                    Delivery could not be completed. Reason: <strong>{{ order.failed_reason }}</strong>
+                                {% else %}
+                                    Waiting for delivery confirmation.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endwith %}
+                </div>
+            </div>
+
+            <!-- Edit Address Form (If permitted) -->
+            {% if address_form %}
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-xl p-8">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center space-x-2">
+                        <i class="fa-solid fa-pen-to-square text-brand-600"></i>
+                        <span>Update Delivery Destination</span>
+                    </h3>
+                    <p class="text-xs text-gray-400 leading-relaxed mb-4">
+                        You can update your delivery address details anytime before the rider picks up the shipment from our warehouse (Picked Up status).
+                    </p>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="id_delivery_address" class="block text-sm font-semibold text-gray-700">Delivery Address Details</label>
+                            <textarea id="id_delivery_address" name="delivery_address" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm" required>{{ order.delivery_address }}</textarea>
+                        </div>
+                        <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition duration-150 transform hover:-translate-y-0.5 shadow">
+                            Save Updated Destination
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Side details: Rider Info & Order details (1 col) -->
+        <div class="space-y-6">
+            <!-- Rider Assignment Details -->
+            {% if order.rider %}
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Assigned Delivery Rider</h3>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center font-extrabold text-lg">
+                            {{ order.rider.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">{{ order.rider.get_full_name|default:order.rider.username }}</h4>
+                            <p class="text-xs text-gray-400 mt-0.5"><i class="fa-solid fa-phone text-[9px] mr-1"></i> {{ order.rider.rider_profile.phone_number }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Order Items Review -->
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">Items Summary</h3>
+                
+                <div class="space-y-3">
+                    {% for item in order.items.all %}
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-650 flex-1 truncate">{{ item.quantity }} x {{ item.product_name }}</span>
+                            <span class="font-bold text-gray-800">${{ item.get_total_price }}</span>
+                        </div>
+                    {% endfor %}
+                    <hr class="border-gray-100 my-3">
+                    <div class="flex justify-between items-end text-sm">
+                        <span class="font-semibold text-gray-800">Total Price</span>
+                        <span class="font-extrabold text-brand-600 text-base">${{ order.total_amount }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Address Snapshot -->
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Delivery Destination</h3>
+                <p class="text-sm text-gray-700 leading-relaxed font-medium">
+                    {{ order.delivery_address }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

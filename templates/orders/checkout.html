@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - SwiftCart Logistics{% endblock %}
+{% block page_title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto py-8">
+    <a href="{% url 'cart' %}" class="inline-flex items-center space-x-1.5 text-sm font-semibold text-gray-500 hover:text-brand-600 transition mb-6">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Return to Cart</span>
+    </a>
+
+    <form method="POST" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {% csrf_token %}
+
+        <!-- Address Picker & Details (2 cols) -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Saved Addresses Section -->
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
+                    <i class="fa-solid fa-location-dot text-brand-600"></i>
+                    <span>Select Delivery Address</span>
+                </h3>
+
+                {% if addresses %}
+                    <div class="space-y-4 mb-6">
+                        {% for address in addresses %}
+                            <label class="relative flex items-start p-4 rounded-2xl border border-gray-200 cursor-pointer hover:bg-slate-50 transition">
+                                <div class="flex items-center h-5">
+                                    <input type="radio" name="address_id" value="{{ address.id }}" {% if address.is_default %}checked{% endif %} class="focus:ring-brand-500 h-4 w-4 text-brand-600 border-gray-300">
+                                </div>
+                                <div class="ml-3 text-sm flex-1">
+                                    <span class="font-bold text-gray-800 block">
+                                        {{ address.name }}
+                                        {% if address.is_default %}
+                                            <span class="ml-2 text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Default</span>
+                                        {% endif %}
+                                    </span>
+                                    <span class="text-gray-500 block mt-1">{{ address.address_line }}</span>
+                                    <span class="text-gray-400 block mt-1 text-xs"><i class="fa-solid fa-phone text-[10px] mr-1"></i> {{ address.phone_number }}</span>
+                                </div>
+                            </label>
+                        {% endfor %}
+                        
+                        <label class="relative flex items-start p-4 rounded-2xl border border-gray-200 cursor-pointer hover:bg-slate-50 transition">
+                            <div class="flex items-center h-5">
+                                <input type="radio" name="address_id" value="" id="customAddressRadio" class="focus:ring-brand-500 h-4 w-4 text-brand-600 border-gray-300">
+                            </div>
+                            <div class="ml-3 text-sm flex-1">
+                                <span class="font-bold text-gray-800 block">Deliver to a new Address</span>
+                                <span class="text-gray-400 block mt-0.5 text-xs">Fill out the form below to enter a custom destination.</span>
+                            </div>
+                        </label>
+                    </div>
+                {% else %}
+                    <div class="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-xs mb-6 flex items-center space-x-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>No saved addresses found. Please enter a delivery address below.</span>
+                    </div>
+                    <input type="hidden" name="address_id" value="">
+                {% endif %}
+
+                <!-- New Address Form Details -->
+                <div id="newAddressContainer" class="{% if addresses %}hidden{% endif %} space-y-4 pt-4 border-t border-gray-150">
+                    <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wider mb-2">New Address Details</h4>
+                    
+                    <div>
+                        <label for="new_address" class="block text-sm font-semibold text-gray-700">Delivery Address *</label>
+                        <textarea id="new_address" name="new_address" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm" placeholder="123 Road Ave, City, Postal Code"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="phone_number" class="block text-sm font-semibold text-gray-700">Recipient Phone Number *</label>
+                        <input type="text" id="phone_number" name="phone_number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm" placeholder="+1 555-000-000">
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" id="save_address" name="save_address" class="focus:ring-brand-500 h-4 w-4 text-brand-600 border-gray-300 rounded">
+                        <label for="save_address" class="ml-2 block text-sm text-gray-500">Save address to profile for future orders</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Summary / Order Actions (1 col) -->
+        <div class="space-y-6">
+            <!-- Summary Card -->
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-xl p-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-6">Review Items</h3>
+
+                <div class="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
+                    {% for item in cart.items.all %}
+                        <div class="flex items-start justify-between text-sm gap-2">
+                            <div class="flex-1">
+                                <span class="font-bold text-gray-800 block truncate">{{ item.product.name }}</span>
+                                <span class="text-gray-400 block text-xs">Qty: {{ item.quantity }} x ${{ item.product.price }}</span>
+                            </div>
+                            <span class="font-bold text-gray-800">${{ item.get_total_price }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <hr class="border-gray-100 my-4">
+
+                <div class="space-y-3 mb-6">
+                    <div class="flex justify-between items-center text-sm text-gray-500">
+                        <span>Delivery Fee</span>
+                        <span class="text-emerald-600 font-bold uppercase tracking-wider text-xs">Free</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm font-semibold text-gray-800">Grand Total</span>
+                        <span class="text-2xl font-black text-brand-600">${{ cart.get_total_price }}</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 transition duration-150 transform hover:-translate-y-0.5">
+                    Place Delivery Order <i class="fa-solid fa-truck-fast ml-2 self-center"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    const radioButtons = document.querySelectorAll('input[name="address_id"]');
+    const customRadio = document.getElementById('customAddressRadio');
+    const newAddressContainer = document.getElementById('newAddressContainer');
+    const newAddressTextarea = document.getElementById('new_address');
+    const phoneInput = document.getElementById('phone_number');
+
+    if (radioButtons && newAddressContainer) {
+        radioButtons.forEach(btn => {
+            btn.addEventListener('change', () => {
+                if (customRadio && customRadio.checked) {
+                    newAddressContainer.classList.remove('hidden');
+                    newAddressTextarea.setAttribute('required', 'true');
+                    phoneInput.setAttribute('required', 'true');
+                } else {
+                    newAddressContainer.classList.add('hidden');
+                    newAddressTextarea.removeAttribute('required');
+                    phoneInput.removeAttribute('required');
+                }
+            });
+        });
+    }
+</script>
+{% endblock %}

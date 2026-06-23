@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Store - SwiftCart Logistics{% endblock %}
+{% block page_title %}Warehouse Catalog{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-4">
+    <!-- Search & Category Filters -->
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-8">
+        <form method="GET" action="{% url 'product_list' %}" class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <!-- Search bar -->
+            <div class="relative flex-1">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                </span>
+                <input type="text" name="q" value="{{ query|default:'' }}" class="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-2xl placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm bg-gray-50" placeholder="Search for scanner, boxes, scanner rolls...">
+            </div>
+
+            <!-- Categories -->
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{% url 'product_list' %}{% if query %}?q={{ query }}{% endif %}" 
+                   class="px-4 py-2 text-xs font-semibold rounded-full border transition {% if not selected_category %}bg-brand-600 text-white border-brand-600{% else %}bg-white text-gray-600 border-gray-200 hover:bg-gray-50{% endif %}">
+                    All Categories
+                </a>
+                {% for category in categories %}
+                    <a href="{% url 'product_list' %}?category={{ category.slug }}{% if query %}&q={{ query }}{% endif %}" 
+                       class="px-4 py-2 text-xs font-semibold rounded-full border transition {% if selected_category == category.slug %}bg-brand-600 text-white border-brand-600{% else %}bg-white text-gray-600 border-gray-200 hover:bg-gray-50{% endif %}">
+                        {{ category.name }}
+                    </a>
+                {% endfor %}
+            </div>
+
+            <!-- Submit buttons -->
+            <button type="submit" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-2xl transition duration-150 transform hover:-translate-y-0.5 shadow-sm text-sm">
+                Filter Results
+            </button>
+        </form>
+    </div>
+
+    <!-- Product Grid -->
+    {% if products %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for product in products %}
+                <div class="bg-white rounded-3xl border border-gray-150 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <!-- Product Image Placeholder or Actual Image -->
+                        <div class="relative h-48 bg-gradient-to-br from-brand-100 to-indigo-50 flex items-center justify-center border-b border-gray-100">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="text-center p-4">
+                                    <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-brand-600 text-2xl mx-auto shadow-sm border border-brand-100">
+                                        {% if product.category.name == 'Electronics' %}
+                                            <i class="fa-solid fa-microchip"></i>
+                                        {% elif product.category.name == 'Groceries' %}
+                                            <i class="fa-solid fa-basket-shopping"></i>
+                                        {% else %}
+                                            <i class="fa-solid fa-box-open"></i>
+                                        {% endif %}
+                                    </div>
+                                    <span class="text-xs text-brand-400 font-semibold uppercase tracking-wider mt-2.5 block">{{ product.category.name }}</span>
+                                </div>
+                            {% endif %}
+
+                            <!-- Stock Warning Badges -->
+                            <div class="absolute top-4 right-4">
+                                {% if product.stock_quantity == 0 %}
+                                    <span class="bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-rose-200">Out Of Stock</span>
+                                {% elif product.is_low_stock %}
+                                    <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-200">Low Stock ({{ product.stock_quantity }})</span>
+                                {% else %}
+                                    <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-200">In Stock ({{ product.stock_quantity }})</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Product Content -->
+                        <div class="p-6">
+                            <h3 class="text-lg font-bold text-gray-800 mb-1 hover:text-brand-600">
+                                <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a>
+                            </h3>
+                            <p class="text-gray-500 text-sm line-clamp-2 leading-relaxed mb-4">
+                                {{ product.description }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Product Footer -->
+                    <div class="p-6 pt-0 border-t border-gray-50 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-gray-400">Warehouse Price</span>
+                            <span class="text-xl font-extrabold text-gray-900">${{ product.price }}</span>
+                        </div>
+
+                        {% if user.is_authenticated and user.is_customer %}
+                            {% if product.stock_quantity > 0 %}
+                                <form method="POST" action="{% url 'add_to_cart' product.id %}" class="flex items-center">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition shadow hover:shadow-md flex items-center space-x-1.5 transform hover:-translate-y-0.5">
+                                        <i class="fa-solid fa-cart-plus"></i>
+                                        <span>Add</span>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button class="px-4 py-2.5 bg-gray-100 text-gray-400 font-semibold rounded-xl text-sm cursor-not-allowed" disabled>
+                                    Sold Out
+                                </button>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'product_detail' product.id %}" class="px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-brand-600 hover:text-brand-750 font-semibold rounded-xl text-sm border border-gray-200 transition">
+                                View Info
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm max-w-lg mx-auto mt-8">
+            <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 text-2xl mx-auto mb-6">
+                <i class="fa-solid fa-boxes-packing"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">No Products Found</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                We couldn't find any products matching your search criteria or category filter in our warehouse database.
+            </p>
+            <a href="{% url 'product_list' %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-md transition inline-block">
+                Clear Filters
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

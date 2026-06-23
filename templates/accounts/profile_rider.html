@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Rider Profile - SwiftCart Logistics{% endblock %}
+{% block page_title %}Rider Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    <div class="bg-white shadow-xl rounded-3xl border border-gray-100 overflow-hidden">
+        <!-- Profile Header BG -->
+        <div class="h-32 bg-gradient-to-r from-violet-600 to-indigo-800"></div>
+        
+        <!-- Profile Avatar & Details -->
+        <div class="px-8 pb-8 relative">
+            <div class="flex flex-col sm:flex-row sm:items-end -mt-16 sm:space-x-5 mb-6">
+                <div class="w-28 h-28 rounded-full bg-violet-100 border-4 border-white text-violet-700 flex items-center justify-center font-bold text-4xl shadow-md">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <div class="mt-4 sm:mt-0 flex-1">
+                    <h1 class="text-2xl font-bold text-gray-900">{{ user.get_full_name|default:user.username }}</h1>
+                    <p class="text-sm text-gray-500">Rider Partner since {{ user.date_joined|date:"M Y" }}</p>
+                </div>
+            </div>
+
+            <hr class="border-gray-100 my-6">
+
+            <!-- Profile Form -->
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-sm font-medium">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="id_first_name" class="block text-sm font-medium text-gray-700">First Name</label>
+                        <input type="text" id="id_first_name" name="first_name" value="{{ form.first_name.value|default:'' }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
+                        {% if form.first_name.errors %}
+                            <p class="mt-1 text-xs text-red-500 font-semibold">{{ form.first_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
+                        <input type="text" id="id_last_name" name="last_name" value="{{ form.last_name.value|default:'' }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
+                        {% if form.last_name.errors %}
+                            <p class="mt-1 text-xs text-red-500 font-semibold">{{ form.last_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_email" class="block text-sm font-medium text-gray-700">Email Address <span class="text-red-500">*</span></label>
+                        <input type="email" id="id_email" name="email" value="{{ form.email.value }}" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
+                        {% if form.email.errors %}
+                            <p class="mt-1 text-xs text-red-500 font-semibold">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="id_phone_number" class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
+                        <input type="text" id="id_phone_number" name="phone_number" value="{{ form.phone_number.value }}" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-brand-500 focus:border-brand-500 sm:text-sm">
+                        {% if form.phone_number.errors %}
+                            <p class="mt-1 text-xs text-red-500 font-semibold">{{ form.phone_number.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-lg transition transform hover:-translate-y-0.5">
+                        Save Profile Details <i class="fa-solid fa-floppy-disk ml-2 self-center"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

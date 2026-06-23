@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}My Dashboard - SwiftCart Logistics{% endblock %}
+{% block page_title %}Customer Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-4">
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+        <!-- Stat Card 1 -->
+        <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Orders</span>
+                <span class="text-3xl font-black text-gray-800">{{ stats.total_orders }}</span>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl shadow-inner border border-brand-100">
+                <i class="fa-solid fa-list-check"></i>
+            </div>
+        </div>
+
+        <!-- Stat Card 2 -->
+        <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Active Deliveries</span>
+                <span class="text-3xl font-black text-gray-800">{{ stats.active_orders }}</span>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-brand-600 flex items-center justify-center text-xl shadow-inner border border-indigo-100">
+                <i class="fa-solid fa-truck-fast"></i>
+            </div>
+        </div>
+
+        <!-- Stat Card 3 -->
+        <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Spent</span>
+                <span class="text-3xl font-black text-gray-800">${{ stats.total_spent }}</span>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner border border-emerald-100">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Orders Section -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-8">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+            <i class="fa-solid fa-truck-ramp-box text-brand-600"></i>
+            <span>Active Shipments</span>
+        </h3>
+
+        {% if active_orders %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-150 text-left text-sm">
+                    <thead>
+                        <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider bg-slate-50">
+                            <th class="px-6 py-3">Order ID</th>
+                            <th class="px-6 py-3">Placed Date</th>
+                            <th class="px-6 py-3">Delivery Address</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Assigned Rider</th>
+                            <th class="px-6 py-3">Total Amount</th>
+                            <th class="px-6 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium text-gray-700">
+                        {% for order in active_orders %}
+                            <tr>
+                                <td class="px-6 py-4 font-bold text-gray-900">#{{ order.id }}</td>
+                                <td class="px-6 py-4 text-xs text-gray-450">{{ order.created_at|date:"M d, Y @ H:i" }}</td>
+                                <td class="px-6 py-4 truncate max-w-xs">{{ order.delivery_address }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border
+                                        {% if order.status == 'PENDING' %}bg-amber-100 text-amber-800 border-amber-200
+                                        {% else %}bg-indigo-100 text-indigo-800 border-indigo-200{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    {% if order.rider %}
+                                        <span class="text-gray-850"><i class="fa-solid fa-user-ninja mr-1 text-[10px]"></i> {{ order.rider.username }}</span>
+                                    {% else %}
+                                        <span class="text-gray-400 text-xs italic">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 font-bold">${{ order.total_amount }}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="{% url 'order_tracking' order.id %}" class="px-3.5 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-600 rounded-lg text-xs transition border border-brand-100">
+                                        Track Delivery
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-8 text-center text-gray-400 text-sm">
+                <i class="fa-solid fa-box-open text-2xl mb-2 block text-gray-300"></i>
+                <span>No active deliveries at the moment.</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Order History Section -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+            <i class="fa-solid fa-clock-rotate-left text-brand-600"></i>
+            <span>Order History</span>
+        </h3>
+
+        {% if orders_history %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-150 text-left text-sm">
+                    <thead>
+                        <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider bg-slate-50">
+                            <th class="px-6 py-3">Order ID</th>
+                            <th class="px-6 py-3">Date</th>
+                            <th class="px-6 py-3">Total Items</th>
+                            <th class="px-6 py-3">Total Price</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium text-gray-700">
+                        {% for order in orders_history %}
+                            <tr>
+                                <td class="px-6 py-4 font-bold text-gray-900">#{{ order.id }}</td>
+                                <td class="px-6 py-4 text-xs text-gray-450">{{ order.created_at|date:"M d, Y @ H:i" }}</td>
+                                <td class="px-6 py-4">{{ order.items.count }} items</td>
+                                <td class="px-6 py-4 font-bold">${{ order.total_amount }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border
+                                        {% if order.status == 'DELIVERED' %}bg-emerald-100 text-emerald-800 border-emerald-200
+                                        {% elif order.status == 'FAILED_DELIVERY' %}bg-rose-100 text-rose-800 border-rose-200
+                                        {% elif order.status == 'CANCELLED' %}bg-gray-100 text-gray-600 border-gray-200
+                                        {% else %}bg-indigo-100 text-indigo-800 border-indigo-200{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="{% url 'order_tracking' order.id %}" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-250 rounded-lg text-xs transition">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-8 text-center text-gray-400 text-sm">
+                <span>No order history found.</span>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

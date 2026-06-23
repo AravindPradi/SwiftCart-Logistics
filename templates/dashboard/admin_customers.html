@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Customers - SwiftCart Logistics{% endblock %}
+{% block page_title %}Manage Customers{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-4">
+    <!-- Customers List Table -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+            <i class="fa-solid fa-users text-brand-600"></i>
+            <span>Customer Accounts</span>
+        </h3>
+
+        {% if customers %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-150 text-left text-sm">
+                    <thead>
+                        <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider bg-slate-50">
+                            <th class="px-6 py-3">Customer User</th>
+                            <th class="px-6 py-3">Phone Number</th>
+                            <th class="px-6 py-3">Default Address</th>
+                            <th class="px-6 py-3 text-center">Total Orders</th>
+                            <th class="px-6 py-3 text-center">Total Spent</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium text-gray-700">
+                        {% for item in customers %}
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-full bg-brand-50 text-brand-650 flex items-center justify-center font-bold text-base shadow-sm border border-brand-100">
+                                            {{ item.customer.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-gray-900 block">{{ item.customer.username }}</span>
+                                            <span class="text-gray-400 text-xs block">Joined: {{ item.customer.date_joined|date:"M d, Y" }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-xs text-gray-500 font-semibold">{{ item.customer.customer_profile.phone_number }}</td>
+                                <td class="px-6 py-4 truncate max-w-xs" title="{{ item.customer.customer_profile.address }}">
+                                    {{ item.customer.customer_profile.address }}
+                                </td>
+                                <td class="px-6 py-4 text-center font-bold text-gray-800">{{ item.total_orders }} orders</td>
+                                <td class="px-6 py-4 text-center font-black text-brand-600 text-base">${{ item.total_spent }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-gray-400 text-sm text-center py-8">No customers registered in the system.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

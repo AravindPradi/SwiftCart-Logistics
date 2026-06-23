@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - SwiftCart Logistics{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-4">
+    <!-- Metrics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Metric Card 1 -->
+        <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Products</span>
+                <span class="text-3xl font-black text-gray-800">{{ total_products }}</span>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl shadow-inner border border-brand-100">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+        </div>
+
+        <!-- Metric Card 2 -->
+        <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Orders</span>
+                <span class="text-3xl font-black text-gray-800">{{ total_orders }}</span>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-650 flex items-center justify-center text-xl shadow-inner border border-indigo-100">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+        </div>
+
+        <!-- Metric Card 3 -->
+        <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Delivered / Failed</span>
+                <span class="text-2xl font-black text-gray-800">
+                    <span class="text-emerald-600">{{ delivered_orders_count }}</span>
+                    <span class="text-gray-300">/</span>
+                    <span class="text-rose-600">{{ failed_deliveries_count }}</span>
+                </span>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-650 flex items-center justify-center text-xl shadow-inner border border-emerald-100">
+                <i class="fa-solid fa-truck-ramp-box"></i>
+            </div>
+        </div>
+
+        <!-- Metric Card 4 -->
+        <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Registered Staff</span>
+                <span class="text-2xl font-black text-gray-800">
+                    <span class="text-gray-700" title="Customers">{{ total_customers }} C</span>
+                    <span class="text-gray-350">|</span>
+                    <span class="text-violet-600" title="Riders">{{ total_riders }} R</span>
+                </span>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-650 flex items-center justify-center text-xl shadow-inner border border-violet-100">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert: Low Stock Warning -->
+    {% if low_stock_products %}
+        <div class="bg-amber-50 border border-amber-200 rounded-3xl p-6 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 text-amber-800">
+                <i class="fa-solid fa-circle-exclamation text-2xl"></i>
+                <div>
+                    <h4 class="font-bold">Low-Stock Warnings Detected!</h4>
+                    <p class="text-xs text-amber-700 mt-0.5">There are {{ low_stock_products.count }} products in the warehouse catalog with a stock level of 5 units or less.</p>
+                </div>
+            </div>
+            <a href="{% url 'admin_products' %}" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs shadow-sm transition">
+                Restock Catalog
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Side: Recent Orders Table (2 cols) -->
+        <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-cart-flatbed text-brand-600"></i>
+                    <span>Recent Warehouse Orders</span>
+                </h3>
+                <a href="{% url 'admin_orders' %}" class="text-xs font-semibold text-brand-600 hover:text-brand-850 transition">
+                    View All Orders
+                </a>
+            </div>
+
+            {% if recent_orders %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-150 text-left text-sm">
+                        <thead>
+                            <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider bg-slate-50">
+                                <th class="px-6 py-3">Order</th>
+                                <th class="px-6 py-3">Customer</th>
+                                <th class="px-6 py-3">Status</th>
+                                <th class="px-6 py-3">Total</th>
+                                <th class="px-6 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 font-medium text-gray-700">
+                            {% for order in recent_orders %}
+                                <tr>
+                                    <td class="px-6 py-4 font-bold text-gray-900">#{{ order.id }}</td>
+                                    <td class="px-6 py-4 text-xs text-gray-450">{{ order.customer.username }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border
+                                            {% if order.status == 'DELIVERED' %}bg-emerald-100 text-emerald-800 border-emerald-200
+                                            {% elif order.status == 'FAILED_DELIVERY' %}bg-rose-100 text-rose-800 border-rose-200
+                                            {% elif order.status == 'PENDING' %}bg-amber-100 text-amber-800 border-amber-200
+                                            {% else %}bg-indigo-100 text-indigo-800 border-indigo-200{% endif %}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 font-bold">${{ order.total_amount }}</td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="{% url 'admin_orders' %}" class="text-brand-600 hover:text-brand-850 text-xs transition">
+                                            Manage
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-gray-400 text-sm text-center py-6">No orders registered yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Right Side: Low Stock Catalog List (1 col) -->
+        <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-6">Critical Stock Levels</h3>
+
+            {% if low_stock_products %}
+                <div class="space-y-4">
+                    {% for prod in low_stock_products %}
+                        <div class="flex items-center justify-between p-3.5 border border-gray-100 rounded-2xl hover:bg-slate-50 transition">
+                            <div>
+                                <span class="font-bold text-gray-800 block truncate text-sm max-w-[150px]">{{ prod.name }}</span>
+                                <span class="text-gray-400 text-[10px] block capitalize mt-0.5">{{ prod.category.name }}</span>
+                            </div>
+
+                            <div class="text-right">
+                                <span class="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-lg">
+                                    {{ prod.stock_quantity }} left
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-6 text-center text-gray-400 text-xs">
+                    <i class="fa-solid fa-circle-check text-emerald-500 text-lg mb-1 block"></i>
+                    <span>All products have healthy inventory levels (above 5 units).</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

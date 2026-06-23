@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Fail Delivery - SwiftCart Logistics{% endblock %}
+{% block page_title %}Mark Failed Delivery{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto py-8">
+    <a href="{% url 'rider_accepted_orders' %}" class="inline-flex items-center space-x-1.5 text-sm font-semibold text-gray-500 hover:text-brand-600 transition mb-6">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Return to Deliveries</span>
+    </a>
+
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-xl p-8">
+        <div class="flex items-center space-x-3 text-rose-600 mb-6">
+            <i class="fa-solid fa-circle-exclamation text-3xl"></i>
+            <div>
+                <h3 class="text-xl font-bold text-gray-800">Confirm Delivery Failure</h3>
+                <p class="text-xs text-gray-400 mt-0.5">Order #{{ order.id }}</p>
+            </div>
+        </div>
+
+        <p class="text-xs text-gray-400 leading-relaxed mb-6">
+            Please provide a detailed reason why the delivery could not be completed. This reason will be visible to the customer and the warehouse administrator.
+        </p>
+
+        <form method="POST" action="{% url 'update_status' order.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="status" value="FAILED_DELIVERY">
+            
+            <div class="mb-6">
+                <label for="id_failed_reason" class="block text-sm font-semibold text-gray-700 mb-2">Reason for Delivery Failure *</label>
+                {{ form.failed_reason }}
+                {% if form.failed_reason.errors %}
+                    <p class="mt-1 text-xs text-red-500 font-semibold">{{ form.failed_reason.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex space-x-3 justify-end">
+                <a href="{% url 'rider_accepted_orders' %}" class="px-5 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl text-sm border border-gray-200 transition font-semibold">
+                    Cancel
+                </a>
+                <button type="submit" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-sm transition shadow">
+                    Submit Failure Status
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

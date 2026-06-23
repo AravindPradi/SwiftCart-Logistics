@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}My Deliveries - SwiftCart Logistics{% endblock %}
+{% block page_title %}My Deliveries{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-4">
+    <!-- Active Deliveries Section -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-8">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+            <i class="fa-solid fa-truck-ramp-box text-brand-600"></i>
+            <span>Active Deliveries Queue</span>
+        </h3>
+
+        {% if active_deliveries %}
+            <div class="space-y-6">
+                {% for order in active_deliveries %}
+                    <div class="p-6 rounded-3xl border border-indigo-150 bg-indigo-50/10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                        <!-- Left Details -->
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h4 class="font-extrabold text-gray-900 text-lg">Order #{{ order.id }}</h4>
+                                <span class="bg-indigo-100 text-indigo-850 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-indigo-200">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500 space-y-1">
+                                <p><strong>Delivery Destination:</strong> {{ order.delivery_address }}</p>
+                                <p><strong>Placed Date:</strong> {{ order.created_at|date:"M d, Y @ H:i" }}</p>
+                                <p><strong>Grand Total:</strong> ${{ order.total_amount }}</p>
+                                <p class="pt-2 font-semibold">Items in shipment:</p>
+                                <div class="max-h-20 overflow-y-auto pl-4 border-l-2 border-indigo-200">
+                                    {% for item in order.items.all %}
+                                        <p class="text-[11px] text-gray-650">{{ item.quantity }} x {{ item.product_name }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Control Actions (allowed status transitions) -->
+                        <div class="bg-white border border-gray-150 p-4 rounded-2xl shadow-sm w-full lg:w-72">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-3">Update Order Status</span>
+                            
+                            <form method="POST" action="{% url 'update_status' order.id %}" class="space-y-3">
+                                {% csrf_token %}
+                                
+                                {% if order.status == 'RIDER_ASSIGNED' %}
+                                    <input type="hidden" name="status" value="REACHED_WAREHOUSE">
+                                    <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs shadow transition">
+                                        Mark: Reached Warehouse
+                                    </button>
+                                {% elif order.status == 'REACHED_WAREHOUSE' %}
+                                    <input type="hidden" name="status" value="PICKED_UP">
+                                    <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs shadow transition">
+                                        Mark: Picked Up Package
+                                    </button>
+                                {% elif order.status == 'PICKED_UP' %}
+                                    <input type="hidden" name="status" value="ON_THE_WAY">
+                                    <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs shadow transition">
+                                        Mark: On The Way
+                                    </button>
+                                {% elif order.status == 'ON_THE_WAY' %}
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="submit" name="status" value="DELIVERED" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs shadow transition">
+                                            Delivered
+                                        </button>
+                                        <button type="submit" name="status" value="FAILED_DELIVERY" class="py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl text-xs shadow transition">
+                                            Fail Delivery
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </form>
+                            
+                            <a href="{% url 'order_tracking' order.id %}" class="w-full block text-center py-2 bg-slate-50 hover:bg-slate-100 text-gray-500 rounded-xl text-xs border border-gray-200 mt-2 font-semibold transition">
+                                Track Details
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="p-8 text-center text-gray-400 text-sm">
+                <i class="fa-solid fa-truck-loading text-2xl mb-2 block text-gray-300"></i>
+                <span>You have no active deliveries. Go to the dashboard to accept pending jobs.</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Completed Deliveries Section -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+            <i class="fa-solid fa-circle-check text-brand-600"></i>
+            <span>Completed Deliveries History</span>
+        </h3>
+
+        {% if completed_deliveries %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-150 text-left text-sm">
+                    <thead>
+                        <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider bg-slate-50">
+                            <th class="px-6 py-3">Order ID</th>
+                            <th class="px-6 py-3">Completed Date</th>
+                            <th class="px-6 py-3">Delivery Address</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Total Amount</th>
+                            <th class="px-6 py-3 text-right">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium text-gray-700">
+                        {% for order in completed_deliveries %}
+                            <tr>
+                                <td class="px-6 py-4 font-bold text-gray-900">#{{ order.id }}</td>
+                                <td class="px-6 py-4 text-xs text-gray-450">{{ order.updated_at|date:"M d, Y @ H:i" }}</td>
+                                <td class="px-6 py-4 truncate max-w-xs">{{ order.delivery_address }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border
+                                        {% if order.status == 'DELIVERED' %}bg-emerald-100 text-emerald-800 border-emerald-200
+                                        {% else %}bg-rose-100 text-rose-800 border-rose-200{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 font-bold">${{ order.total_amount }}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="{% url 'order_tracking' order.id %}" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-250 rounded-lg text-xs transition">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-8 text-center text-gray-400 text-sm">
+                <span>No delivery history found.</span>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

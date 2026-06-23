@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Riders - SwiftCart Logistics{% endblock %}
+{% block page_title %}Manage Riders & Dispatch Analytics{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-4">
+    <!-- Riders Performance Table -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+            <i class="fa-solid fa-motorcycle text-brand-600"></i>
+            <span>Rider Dispatch Profiles</span>
+        </h3>
+
+        {% if riders %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-150 text-left text-sm">
+                    <thead>
+                        <tr class="text-xs font-bold text-gray-400 uppercase tracking-wider bg-slate-50">
+                            <th class="px-6 py-3">Rider Info</th>
+                            <th class="px-6 py-3">Availability</th>
+                            <th class="px-6 py-3 text-center">Total Deliveries</th>
+                            <th class="px-6 py-3 text-center">Succeeded</th>
+                            <th class="px-6 py-3 text-center">Failed</th>
+                            <th class="px-6 py-3 text-center">Success Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 font-medium text-gray-700">
+                        {% for item in riders %}
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-base shadow-sm">
+                                            {{ item.rider.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <span class="font-bold text-gray-900 block">{{ item.rider.username }}</span>
+                                            <span class="text-gray-400 text-xs block"><i class="fa-solid fa-phone text-[9px] mr-1"></i> {{ item.rider.rider_profile.phone_number }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    {% if item.rider.rider_profile.is_online %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                            <i class="fa-solid fa-circle text-[7px] mr-1.5 animate-ping"></i> Online
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+                                            <i class="fa-solid fa-circle text-[7px] mr-1.5"></i> Offline
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-center font-bold text-gray-800">{{ item.total_deliveries }} jobs</td>
+                                <td class="px-6 py-4 text-center text-emerald-600 font-bold">{{ item.success_deliveries }}</td>
+                                <td class="px-6 py-4 text-center text-rose-600 font-bold">{{ item.failed_deliveries }}</td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="inline-flex flex-col items-center">
+                                        <span class="font-black text-brand-600 text-base">{{ item.success_rate }}%</span>
+                                        <div class="w-20 bg-gray-200 rounded-full h-1.5 mt-1 overflow-hidden">
+                                            <div class="bg-brand-500 h-1.5" style="width: {{ item.success_rate }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-gray-400 text-sm text-center py-8">No riders registered in the system.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

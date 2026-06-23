@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Rider Dashboard - SwiftCart Logistics{% endblock %}
+{% block page_title %}Rider Workspace{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-4">
+    <!-- Header Status Panel -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div class="flex items-center space-x-4">
+            <div class="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 text-2xl shadow-inner">
+                <i class="fa-solid fa-motorcycle"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">Hello, {{ user.username }}!</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Phone: {{ profile.phone_number }}</p>
+            </div>
+        </div>
+
+        <!-- Availability Status Picker -->
+        <div class="flex items-center space-x-4 bg-slate-50 border border-gray-150 rounded-2xl p-4">
+            <div class="text-left">
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Availability Status</span>
+                {% if is_online %}
+                    <span class="text-sm font-extrabold text-emerald-600 flex items-center"><i class="fa-solid fa-circle text-[8px] mr-1.5 animate-ping"></i> Online / Accepting Deliveries</span>
+                {% else %}
+                    <span class="text-sm font-extrabold text-gray-400 flex items-center"><i class="fa-solid fa-circle text-[8px] mr-1.5"></i> Offline / Resting</span>
+                {% endif %}
+            </div>
+
+            <form method="POST" action="{% url 'toggle_availability' %}">
+                {% csrf_token %}
+                <button type="submit" class="px-4 py-2 text-xs font-semibold rounded-xl transition border shadow-sm
+                    {% if is_online %}bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100
+                    {% else %}bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100{% endif %}">
+                    {% if is_online %}Go Offline{% else %}Go Online{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Active Orders Section (Always visible) -->
+    {% if is_online and active_deliveries %}
+        <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+                <i class="fa-solid fa-truck-ramp-box text-brand-600"></i>
+                <span>My Active Shipments</span>
+            </h3>
+            
+            <div class="space-y-4">
+                {% for order in active_deliveries %}
+                    <div class="p-6 rounded-2xl border border-indigo-150 bg-indigo-50/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <span class="text-[10px] font-bold text-brand-600 uppercase tracking-wider">Active Task</span>
+                            <h4 class="font-extrabold text-gray-800 text-lg mt-0.5">Order #{{ order.id }}</h4>
+                            <p class="text-xs text-gray-500 mt-2 leading-relaxed max-w-xl">
+                                <strong>Delivery Destination:</strong> {{ order.delivery_address }}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center space-x-3">
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider border border-indigo-200">
+                                {{ order.get_status_display }}
+                            </span>
+                            <a href="{% url 'rider_accepted_orders' %}" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-xs shadow-sm transition">
+                                Manage Delivery
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Unassigned Pending Orders Section -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center space-x-2">
+            <i class="fa-solid fa-list-check text-brand-600"></i>
+            <span>Unassigned Pending Orders</span>
+        </h3>
+
+        {% if is_online %}
+            {% if pending_orders %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for order in pending_orders %}
+                        <div class="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition">
+                            <div>
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h4 class="font-bold text-gray-800 text-lg">Order #{{ order.id }}</h4>
+                                        <span class="text-[10px] text-gray-400 font-semibold block mt-0.5">Placed {{ order.created_at|timesince }} ago</span>
+                                    </div>
+                                    <span class="text-lg font-black text-brand-600">${{ order.total_amount }}</span>
+                                </div>
+                                <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                                    <strong>Destination:</strong> {{ order.delivery_address }}
+                                </p>
+                                <div class="space-y-1">
+                                    <span class="text-[10px] font-bold text-gray-450 uppercase tracking-wider block">Items ({{ order.items.count }})</span>
+                                    <div class="max-h-20 overflow-y-auto">
+                                        {% for item in order.items.all %}
+                                            <span class="text-[11px] text-gray-500 block truncate">{{ item.quantity }} x {{ item.product_name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 border-t border-gray-50 mt-6 flex space-x-3">
+                                <form method="POST" action="{% url 'accept_order' order.id %}" class="flex-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs transition shadow transform hover:-translate-y-0.5">
+                                        Accept Job
+                                    </button>
+                                </form>
+                                <form method="POST" action="{% url 'reject_order' order.id %}" class="flex-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl text-xs border border-rose-200 transition">
+                                        Reject Job
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-8 text-center text-gray-400 text-sm">
+                    <i class="fa-solid fa-truck-loading text-2xl mb-2 block text-gray-300"></i>
+                    <span>No unassigned pending orders in the queue. Check back soon!</span>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- Offline Notice -->
+            <div class="p-8 text-center bg-gray-50 border border-dashed border-gray-200 rounded-3xl max-w-lg mx-auto">
+                <div class="w-16 h-16 bg-gray-150 rounded-2xl flex items-center justify-center text-gray-400 text-2xl mx-auto mb-4">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+                <h4 class="font-bold text-gray-800 mb-1">You are currently Offline</h4>
+                <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                    To start viewing available delivery jobs and receiving dispatch offers, toggle your status to "Go Online" at the top of the screen.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

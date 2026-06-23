@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - SwiftCart Logistics{% endblock %}
+{% block page_title %}Shopping Cart{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-8">
+    {% if cart.items.exists %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Cart Items List (2 cols) -->
+            <div class="lg:col-span-2 space-y-6">
+                {% for item in cart.items.all %}
+                    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-6 hover:shadow-md transition">
+                        <!-- Product Details -->
+                        <div class="flex items-center space-x-4 flex-1">
+                            <div class="w-16 h-16 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 text-xl shadow-inner">
+                                {% if item.product.category.name == 'Electronics' %}
+                                    <i class="fa-solid fa-microchip"></i>
+                                {% elif item.product.category.name == 'Groceries' %}
+                                    <i class="fa-solid fa-basket-shopping"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-box-open"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 hover:text-brand-600">
+                                    <a href="{% url 'product_detail' item.product.id %}">{{ item.product.name }}</a>
+                                </h3>
+                                <p class="text-xs text-gray-400 capitalize">{{ item.product.category.name }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Price and Stock limits -->
+                        <div class="text-center sm:text-right">
+                            <span class="text-xs text-gray-400 block">Unit Price</span>
+                            <span class="font-bold text-gray-900">${{ item.product.price }}</span>
+                        </div>
+
+                        <!-- Quantity Actions -->
+                        <div class="flex items-center space-x-3 bg-gray-50 border border-gray-200 rounded-xl p-1 shadow-inner">
+                            <form method="POST" action="{% url 'update_cart_item' item.id %}" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit" class="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition">
+                                    <i class="fa-solid fa-minus text-xs"></i>
+                                </button>
+                            </form>
+                            
+                            <span class="w-8 text-center font-bold text-sm text-gray-800">{{ item.quantity }}</span>
+
+                            <form method="POST" action="{% url 'update_cart_item' item.id %}" class="inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="increase">
+                                <button type="submit" class="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Total Price & Remove Button -->
+                        <div class="flex items-center space-x-6">
+                            <div class="text-right">
+                                <span class="text-xs text-gray-400 block">Subtotal</span>
+                                <span class="text-lg font-extrabold text-gray-900">${{ item.get_total_price }}</span>
+                            </div>
+
+                            <form method="POST" action="{% url 'update_cart_item' item.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="remove">
+                                <button type="submit" class="text-rose-500 hover:text-rose-700 transition p-2 hover:bg-rose-50 rounded-xl">
+                                    <i class="fa-solid fa-trash-can text-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Cart Summary Sidebar (1 col) -->
+            <div class="bg-white rounded-3xl border border-gray-100 shadow-xl p-8 h-fit">
+                <h3 class="text-lg font-bold text-gray-800 mb-6">Order Summary</h3>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between text-sm text-gray-500">
+                        <span>Items Count</span>
+                        <span class="font-semibold text-gray-800">{{ cart.items.count }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-500">
+                        <span>Delivery Fee</span>
+                        <span class="text-emerald-600 font-bold uppercase tracking-wider text-xs">Free</span>
+                    </div>
+                    <hr class="border-gray-100 my-4">
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm font-semibold text-gray-800">Total Price</span>
+                        <span class="text-2xl font-black text-brand-600">${{ cart.get_total_price }}</span>
+                    </div>
+                </div>
+
+                <a href="{% url 'checkout' %}" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 transition duration-150 transform hover:-translate-y-0.5">
+                    Proceed to Checkout <i class="fa-solid fa-truck-arrow-right ml-2 self-center"></i>
+                </a>
+                
+                <a href="{% url 'product_list' %}" class="w-full text-center block text-xs font-semibold text-brand-600 hover:text-brand-850 mt-4 transition">
+                    Continue Shopping
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm max-w-lg mx-auto mt-8">
+            <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 text-2xl mx-auto mb-6">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Your Cart is Empty</h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                Looks like you haven't added any products to your shipping cart yet. Browse our warehouse catalog to get started.
+            </p>
+            <a href="{% url 'product_list' %}" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-md transition inline-block">
+                Shop Catalog
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Customer - SwiftCart Logistics{% endblock %}
+{% block page_title %}Register Customer{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex flex-col justify-center py-6 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-lg">
+        <h2 class="text-center text-3xl font-extrabold text-gray-900">
+            Create Customer Account
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Already have an account?
+            <a href="{% url 'login' %}" class="font-medium text-brand-600 hover:text-brand-500 transition">
+                Sign In
+            </a>
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
+        <div class="bg-white py-8 px-4 shadow-xl rounded-3xl border border-gray-100 sm:px-10">
+            <form class="space-y-6" method="POST">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-sm font-medium">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ field.label }} {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                        </label>
+                        <div class="mt-1">
+                            {% if field.name == 'address' %}
+                                <textarea id="{{ field.id_for_label }}" name="{{ field.name }}" rows="3" class="shadow-sm focus:ring-brand-500 focus:border-brand-500 block w-full sm:text-sm border-gray-300 rounded-xl px-3 py-2 border" placeholder="Enter delivery address"></textarea>
+                            {% else %}
+                                <input id="{{ field.id_for_label }}" name="{{ field.name }}" type="{% if 'password' in field.name %}password{% elif field.name == 'email' %}email{% else %}text{% endif %}" required class="block w-full px-3 py-2.5 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm" placeholder="Enter {{ field.label|lower }}">
+                            {% endif %}
+                        </div>
+                        {% if field.help_text %}
+                            <p class="mt-1 text-xs text-gray-400">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                            <p class="mt-1 text-xs text-red-500 font-semibold">{{ field.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition duration-150 transform hover:-translate-y-0.5">
+                        Register Account <i class="fa-solid fa-user-plus ml-2 self-center"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

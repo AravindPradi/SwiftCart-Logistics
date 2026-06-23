@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In - SwiftCart Logistics{% endblock %}
+{% block page_title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex flex-col justify-center py-6 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <!-- Logo Icon -->
+        <div class="flex justify-center">
+            <div class="w-16 h-16 bg-brand-600 rounded-3xl flex items-center justify-center text-white text-3xl shadow-lg border border-brand-500 animate-bounce-slow">
+                <i class="fa-solid fa-truck-fast"></i>
+            </div>
+        </div>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+        </h2>
+        <p class="mt-2 text-center text-sm text-gray-600">
+            Or
+            <a href="{% url 'register_customer' %}" class="font-medium text-brand-600 hover:text-brand-500 transition">
+                register as a customer
+            </a>
+            /
+            <a href="{% url 'register_rider' %}" class="font-medium text-brand-600 hover:text-brand-500 transition">
+                rider
+            </a>
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow-xl rounded-3xl border border-gray-100 sm:px-10">
+            <form class="space-y-6" method="POST">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="id_username" class="block text-sm font-medium text-gray-700">
+                        Username
+                    </label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-user text-gray-400"></i>
+                        </div>
+                        <input id="id_username" name="username" type="text" required class="pl-10 block w-full px-3 py-2.5 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm" placeholder="Enter username">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_password" class="block text-sm font-medium text-gray-700">
+                        Password
+                    </label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-lock text-gray-400"></i>
+                        </div>
+                        <input id="id_password" name="password" type="password" required class="pl-10 block w-full px-3 py-2.5 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm" placeholder="Enter password">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition duration-150 transform hover:-translate-y-0.5">
+                        Sign In <i class="fa-solid fa-arrow-right-to-bracket ml-2 self-center"></i>
+                    </button>
+                </div>
+                
+            </form>
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-400">
+                            Demo Accounts (For Testing)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-xs text-gray-500 bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-1.5">
+                    <div><strong>Admin:</strong> admin / adminpassword123</div>
+                    <div><strong>Customer:</strong> john_doe / customerpass123</div>
+                    <div><strong>Rider:</strong> rider_mike / riderpass123</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
